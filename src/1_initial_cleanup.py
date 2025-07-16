@@ -12,7 +12,7 @@ import bioio_ome_tiff
 logger.info('import ok')
 
 # configuration
-input_path = 'raw_data/'
+input_path = '/Volumes/Boeynaems-Lab/Pilar/In vivo/CLN3 - C9 project/CLN3 brain tissue/Full KO/6 mo cohort/mTOR-Iba-Lamp/Thalamus/Combined/'
 output_folder = 'results/initial_cleanup/'
 image_extensions = ['.czi', '.tif', '.tiff', '.lif']
 
@@ -67,14 +67,15 @@ def image_converter(image_path, output_folder, tiff=False, MIP=False, array=True
         # save image as tiff file
         OmeTiffWriter.save(image, f'{output_folder}{short_name}.tif')
 
-    if array == True:
-        # save image as numpy array
-        np.save(f'{output_folder}{short_name}.npy', image)
-
     if MIP == True:
         # save image as maximum intensity projection (MIP) numpy array 
         mip_image = np.max(image, axis=-3) # assuming axis for projection is third from last
         np.save(f'{output_folder}{short_name}_mip.npy', mip_image)
+        array = False  # do not save original image as array if MIP is True
+
+    if array == True:
+        # save image as numpy array
+        np.save(f'{output_folder}{short_name}.npy', image)
 
 
 if __name__ == '__main__':
@@ -86,9 +87,9 @@ if __name__ == '__main__':
     else:
         # find subdirectories of interest
         experiments = ['240509-Processed']
-        # if you want all images from all subdirectories in file path, set experiments to 'walk_list'
+        # if you want all images from all subdirectories in file path, set experiments to 'walk_list' in the lines below
         walk_list = [x[0] for x in os.walk(input_path)]
-        walk_list = [item for item in walk_list if any(x in item for x in experiments)]
+        walk_list = [item for item in walk_list if any(x in item for x in walk_list)]
 
         # read in all image file names
         file_list = [[f'{root}/{filename}' for filename in files]
@@ -99,7 +100,7 @@ if __name__ == '__main__':
         flat_file_list = [item for sublist in file_list for item in sublist if any(sub in item for sub in image_extensions)]
 
     # remove images that do not require analysis (e.g., qualitative controls)
-    do_not_quantitate = ['_no-', 'UT'] 
+    do_not_quantitate = [] 
     image_names = [filename for filename in flat_file_list if not any(word in filename for word in do_not_quantitate)]
 
     # remove duplicates
@@ -108,6 +109,6 @@ if __name__ == '__main__':
     # --------------- collect image names and convert ---------------
     # collect and convert images to np arrays
     for name in image_names:
-        image_converter(name, output_folder=f'{output_folder}', tiff=False, MIP=False, array=True)
+        image_converter(name, output_folder=f'{output_folder}', tiff=False, MIP=True)
 
     logger.info('initial cleanup complete :-)')
