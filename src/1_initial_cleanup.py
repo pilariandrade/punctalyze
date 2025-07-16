@@ -61,7 +61,7 @@ def image_converter(image_path, output_folder, tiff=False, MIP=False, array=True
 
     # make more human readable name
     short_name = os.path.basename(image_path)
-    short_name = short_name.split('.')[0]  # remove file extension
+    short_name = short_name.split('_')[0]  # remove file extension
 
     if tiff == True:
         # save image as tiff file
@@ -108,6 +108,7 @@ if __name__ == '__main__':
 
     # --------------- collect image names and convert ---------------
     # collect and convert images to np arrays
+    # make sure to change short_name to keep all relevant info
     for name in image_names:
         image_converter(name, output_folder=f'{output_folder}', tiff=False, MIP=True)
 
